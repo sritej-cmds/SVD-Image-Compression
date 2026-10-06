@@ -1,175 +1,235 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-A=np.array([[2,1],[-1,1]],dtype=float)
 
-U,S,Vt=np.linalg.svd(A)
+def run_geometry_experiment(output_dir):
+    """
+    Run the complete SVD geometry experiment.
 
-t=np.linspace(0,2*np.pi,100)
-X=np.array([np.cos(t),np.sin(t)])
+    Tasks:
+    3. Vᵀ transformation
+    4. Σ transformation
+    5. U transformation
+    6. Reflection experiment
+    7. Numerical verification
 
+    All generated figures are saved to output_dir.
+    """
 
-# ============================================================
-# TASK 3 — Vᵀ TRANSFORMATION
-# ============================================================
+    os.makedirs(output_dir, exist_ok=True)
 
-def apply_vt(X,Vt):
-    return Vt@X
+    # ------------------------------------------------------------
+    # SVD SETUP
+    # ------------------------------------------------------------
 
-VX=apply_vt(X,Vt)
+    A = np.array([
+        [2, 1],
+        [-1, 1]
+    ], dtype=float)
 
-plt.figure(figsize=(6,6))
-plt.plot(X[0],X[1],label="Original Circle")
-plt.plot(VX[0],VX[1],label="After Vᵀ")
-plt.axis("equal")
-plt.grid(True)
-plt.legend()
-plt.title("Vᵀ Transformation")
-plt.show()
+    U, S, Vt = np.linalg.svd(A)
 
+    # Unit circle
+    t = np.linspace(0, 2 * np.pi, 100)
+    X = np.array([
+        np.cos(t),
+        np.sin(t)
+    ])
 
-# ============================================================
-# TASK 4 — Σ TRANSFORMATION
-# ============================================================
+    # ============================================================
+    # TASK 3 — Vᵀ TRANSFORMATION
+    # ============================================================
 
-def apply_sigma(X,S):
-    Sigma=np.diag(S)
-    return Sigma@X
+    def apply_vt(X, Vt):
+        return Vt @ X
 
-SVX=apply_sigma(VX,S)
+    VX = apply_vt(X, Vt)
 
-plt.figure(figsize=(6,6))
-plt.plot(VX[0],VX[1],label="After Vᵀ")
-plt.plot(SVX[0],SVX[1],label="After ΣVᵀ")
-plt.axis("equal")
-plt.grid(True)
-plt.legend()
-plt.title("Σ Transformation")
-plt.show()
-plt.close()
+    plt.figure(figsize=(6, 6))
+    plt.plot(X[0], X[1], label="Original Circle")
+    plt.plot(VX[0], VX[1], label="After Vᵀ")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.title("Vᵀ Transformation")
+    plt.tight_layout()
 
-# ============================================================
-# TASK 5 — U TRANSFORMATION
-# ============================================================
+    plt.savefig(
+        os.path.join(output_dir, "vt_transformation.png")
+    )
+    plt.close()
 
-def apply_u(X,U):
-    return U@X
+    # ============================================================
+    # TASK 4 — Σ TRANSFORMATION
+    # ============================================================
 
-AX=apply_u(SVX,U)
+    def apply_sigma(X, S):
+        Sigma = np.diag(S)
+        return Sigma @ X
 
-plt.figure(figsize=(6,6))
-plt.plot(SVX[0],SVX[1],label="After ΣVᵀ")
-plt.plot(AX[0],AX[1],label="After UΣVᵀ")
-plt.axis("equal")
-plt.grid(True)
-plt.legend()
-plt.title("U Transformation")
-plt.show()
-plt.close()
+    SVX = apply_sigma(VX, S)
 
-# ============================================================
-# TASK 6 — REFLECTION EXPERIMENT
-# ============================================================
+    plt.figure(figsize=(6, 6))
+    plt.plot(VX[0], VX[1], label="After Vᵀ")
+    plt.plot(SVX[0], SVX[1], label="After ΣVᵀ")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.title("Σ Transformation")
+    plt.tight_layout()
 
-V=Vt.T
+    plt.savefig(
+        os.path.join(output_dir, "sigma_transformation.png")
+    )
+    plt.close()
 
-det_U=np.linalg.det(U)
-det_V=np.linalg.det(V)
+    # ============================================================
+    # TASK 5 — U TRANSFORMATION
+    # ============================================================
 
-print("\n===== TASK 6 — REFLECTION EXPERIMENT =====")
+    def apply_u(X, U):
+        return U @ X
 
-print("det(U):",det_U)
-print("det(V):",det_V)
+    AX = apply_u(SVX, U)
 
-if det_U<0:
-    print("U contains a reflection.")
-else:
-    print("U does not contain a reflection.")
+    plt.figure(figsize=(6, 6))
+    plt.plot(SVX[0], SVX[1], label="After ΣVᵀ")
+    plt.plot(AX[0], AX[1], label="After UΣVᵀ")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.title("U Transformation")
+    plt.tight_layout()
 
-if det_V<0:
-    print("V contains a reflection.")
-else:
-    print("V does not contain a reflection.")
+    plt.savefig(
+        os.path.join(output_dir, "u_transformation.png")
+    )
+    plt.close()
 
+    # ============================================================
+    # TASK 6 — REFLECTION EXPERIMENT
+    # ============================================================
 
-U1=U.copy()
-V1=V.copy()
+    V = Vt.T
 
-U1[:,1]*=-1
-V1[:,1]*=-1
+    det_U = np.linalg.det(U)
+    det_V = np.linalg.det(V)
 
-A_modified=U1@np.diag(S)@V1.T
+    print("\nReflection experiment:")
+    print("det(U):", det_U)
+    print("det(V):", det_V)
 
-print("\nOriginal A:")
-print(A)
+    if det_U < 0:
+        print("U contains a reflection.")
+    else:
+        print("U does not contain a reflection.")
 
-print("\nModified U1:")
-print(U1)
+    if det_V < 0:
+        print("V contains a reflection.")
+    else:
+        print("V does not contain a reflection.")
 
-print("\nModified V1:")
-print(V1)
+    # Modify U and V by flipping one column in each.
+    U1 = U.copy()
+    V1 = V.copy()
 
-print("\nU1ΣV1ᵀ:")
-print(A_modified)
+    U1[:, 1] *= -1
+    V1[:, 1] *= -1
 
-print("\nModified SVD reconstructs A:")
-print(np.allclose(A_modified,A))
+    A_modified = U1 @ np.diag(S) @ V1.T
 
-# ============================================================
-# TASK 7 — NUMERICAL VERIFICATION : AV=U*sigma
-# ============================================================
+    reflection_reconstruction = np.allclose(
+        A_modified,
+        A
+    )
 
-def verify_svd_geometry(A,U,S,Vt):
-    left=A@Vt.T
-    right=U@np.diag(S)
-    difference=left-right
-    return np.allclose(left,right),difference
+    print("\nOriginal A:")
+    print(A)
 
-check,difference=verify_svd_geometry(A,U,S,Vt)
+    print("\nModified U1:")
+    print(U1)
 
-print("\n===== TASK 7 — NUMERICAL VERIFICATION =====")
+    print("\nModified V1:")
+    print(V1)
 
-print("\nAV:")
-print(A@Vt.T)
+    print("\nU1ΣV1ᵀ:")
+    print(A_modified)
 
-print("\nUΣ:")
-print(U@np.diag(S))
+    print(
+        "\nModified SVD reconstructs A:",
+        reflection_reconstruction
+    )
 
-print("\nDifference:")
-print(difference)
+    # ============================================================
+    # TASK 7 — NUMERICAL VERIFICATION
+    # ============================================================
 
-print("\nAV=UΣ:",check)
+    left = A @ Vt.T
+    right = U @ np.diag(S)
 
-# ============================================================
-# FINAL — COMPLETE SVD GEOMETRY
-# ============================================================
+    difference = left - right
 
-plt.figure(figsize=(10,8))
+    av_equals_usigma = np.allclose(
+        left,
+        right
+    )
 
-plt.subplot(2,2,1)
-plt.plot(X[0],X[1])
-plt.axis("equal")
-plt.grid(True)
-plt.title("Original Unit Circle")
+    print("\nAV:")
+    print(left)
 
-plt.subplot(2,2,2)
-plt.plot(VX[0],VX[1])
-plt.axis("equal")
-plt.grid(True)
-plt.title("After Vᵀ")
+    print("\nUΣ:")
+    print(right)
 
-plt.subplot(2,2,3)
-plt.plot(SVX[0],SVX[1])
-plt.axis("equal")
-plt.grid(True)
-plt.title("After ΣVᵀ")
+    print("\nDifference:")
+    print(difference)
 
-plt.subplot(2,2,4)
-plt.plot(AX[0],AX[1])
-plt.axis("equal")
-plt.grid(True)
-plt.title("After UΣVᵀ = AX")
+    print("\nAV=UΣ:", av_equals_usigma)
 
-plt.tight_layout()
-plt.show()
-plt.close()
+    # ============================================================
+    # FINAL — COMPLETE SVD GEOMETRY
+    # ============================================================
+
+    plt.figure(figsize=(10, 8))
+
+    plt.subplot(2, 2, 1)
+    plt.plot(X[0], X[1])
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("Original Unit Circle")
+
+    plt.subplot(2, 2, 2)
+    plt.plot(VX[0], VX[1])
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("After Vᵀ")
+
+    plt.subplot(2, 2, 3)
+    plt.plot(SVX[0], SVX[1])
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("After ΣVᵀ")
+
+    plt.subplot(2, 2, 4)
+    plt.plot(AX[0], AX[1])
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("After UΣVᵀ = AX")
+
+    plt.tight_layout()
+
+    plt.savefig(
+        os.path.join(output_dir, "complete_svd_geometry.png")
+    )
+    plt.close()
+
+    # ============================================================
+    # RETURN RESULTS TO main.py
+    # ============================================================
+
+    return {
+        "det_U": det_U,
+        "det_V": det_V,
+        "reflection_reconstruction": reflection_reconstruction,
+        "av_equals_usigma": av_equals_usigma
+    }

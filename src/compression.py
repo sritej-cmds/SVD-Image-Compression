@@ -19,7 +19,7 @@ def image_svd(image):
     )
 
 
-def plot_singular_values(S):
+def plot_singular_values(S, output_path):
     plt.figure(figsize=(10, 5))
 
     plt.plot(S)
@@ -31,13 +31,10 @@ def plot_singular_values(S):
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig(
-        "outputs/compression/singular_values.png"
-    )
+    plt.savefig(output_path)
 
     plt.close()
-
-
+    
 def compress_image(U, S, Vt, k):
     U_k = U[:, :k]
     S_k = S[:k]
